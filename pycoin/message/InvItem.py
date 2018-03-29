@@ -3,23 +3,29 @@ import functools
 from pycoin.serialize import b2h_rev
 from pycoin.serialize.bitcoin_streamer import parse_struct, stream_struct
 
-ITEM_TYPE_TX, ITEM_TYPE_BLOCK, ITEM_TYPE_MERKLEBLOCK = (1, 2, 3)
+ITEM_TYPE_TX, ITEM_TYPE_BLOCK, ITEM_TYPE_MERKLEBLOCK, ITEM_TYPE_SEGWIT_TX, ITEM_TYPE_SEGWIT_BLOCK = \
+    (1, 2, 3, 1073741825, 1073741826)
 
 
 @functools.total_ordering
 class InvItem(object):
     def __init__(self, item_type, data, dont_check=False):
         if not dont_check:
-            assert item_type in (ITEM_TYPE_TX, ITEM_TYPE_BLOCK, ITEM_TYPE_MERKLEBLOCK)
+            assert item_type in (
+                ITEM_TYPE_TX, ITEM_TYPE_BLOCK, ITEM_TYPE_MERKLEBLOCK, ITEM_TYPE_SEGWIT_TX, ITEM_TYPE_SEGWIT_BLOCK
+            )
         self.item_type = item_type
         assert isinstance(data, bytes)
         assert len(data) == 32
         self.data = data
 
     def __str__(self):
-        INV_TYPES = ["?", "Tx", "Block", "Merkle"]
+        BLOCK = "Block"
+        TX = "Tx"
+        INV_TYPES = {0: "?", 1: TX, 2: BLOCK, 3: "Merkle", 1073741825: TX, 1073741826: BLOCK}
         idx = self.item_type
-        if not 0 < idx < 4:
+        print(idx, idx)
+        if idx not in INV_TYPES.keys():
             idx = 0
         return "InvItem %s [%s]" % (INV_TYPES[idx], b2h_rev(self.data))
 
