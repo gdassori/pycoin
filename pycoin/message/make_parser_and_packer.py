@@ -49,7 +49,8 @@ STANDARD_P2P_MESSAGES = {
         "header:z total_transactions:L hashes:[#] flags:[1]"
     ),
     'alert': "payload:S signature:S",
-    'sendheaders': ""
+    'sendheaders': "",
+    'unknown': ""
 }
 
 
@@ -225,9 +226,7 @@ def make_parser_and_packer(streamer, message_dict, message_post_unpacks):
 
     def parse_from_data(message_name, data):
         message_stream = io.BytesIO(data)
-        parser = message_parsers.get(message_name)
-        if parser is None:
-            raise LookupError("unknown message: %s" % message_name)
+        parser = message_parsers.get(message_name, message_parsers.get('unknown'))
         d = parser(message_stream)
         post_unpack = message_post_unpacks.get(message_name)
         if post_unpack:
@@ -235,7 +234,10 @@ def make_parser_and_packer(streamer, message_dict, message_post_unpacks):
         return d
 
     def pack_from_data(message_name, **kwargs):
-        the_struct = message_dict[message_name]
+        try:
+            the_struct = message_dict[message_name]
+        except KeyError:
+            return ""
         if not the_struct:
             return b''
         f = io.BytesIO()
