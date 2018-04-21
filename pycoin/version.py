@@ -1,1 +1,1 @@
-version = "0.90a-spruned-02"
+version = "0.90spruned02"
